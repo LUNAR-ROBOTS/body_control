@@ -1,28 +1,64 @@
-<html>
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Joystick Control</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.7.3/nipplejs.min.js"></script>
+    </head>
     <body>
-        <h1>Hello World</h1>
+        <h1>Control Interface</h1>
         <div id="response"></div>
-        <form id="action1" onsubmit="submitForm(event, 'action1')">
+        <div id="joystick-container" style="width: 200px; height: 200px; border: 1px solid black;"></div>
+
+        <form id="action1" onsubmit="submitAction(event, 'action1')">
             <button type="submit">Action 1</button>
         </form>
-        <form id="action2" onsubmit="submitForm(event, 'action2')">
+        <form id="action2" onsubmit="submitAction(event, 'action2')">
             <button type="submit">Action 2</button>
         </form>
-        <form id="action3" onsubmit="submitForm(event, 'action3')">
+        <form id="action3" onsubmit="submitAction(event, 'action3')">
             <button type="submit">Action 3</button>
         </form>
-        <form id="action4" onsubmit="submitForm(event, 'action4')">
+        <form id="action4" onsubmit="submitAction(event, 'action4')">
             <button type="submit">Action 4</button>
         </form>
+
         <script>
-            function submitForm(event, action) {
+            function submitAction(event, action) {
                 event.preventDefault(); // Prevent form from submitting normally
                 fetch('/' + action, { method: 'POST' })
                     .then(response => response.text())
                     .then(text => document.getElementById('response').innerText = text)
                     .catch(error => console.error('Error:', error));
             }
+
+            // Joystick setup
+            var joystick = nipplejs.create({
+                zone: document.getElementById('joystick-container'),
+                mode: 'static',
+                position: { left: '50%', top: '50%' },
+                color: 'red'
+            });
+
+            joystick.on('move', function (evt, data) {
+                if (data.direction) {
+                    let position = {
+                        x: data.position.x,
+                        y: data.position.y
+                    };
+                    fetch('/joystick', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(position)
+                    })
+                    .then(response => response.text())
+                    .then(text => console.log(text))
+                    .catch(error => console.error('Error:', error));
+                }
+            });
+
         </script>
     </body>
 </html>
-
