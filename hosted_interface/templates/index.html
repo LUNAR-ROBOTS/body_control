@@ -22,6 +22,10 @@
         <form id="action4" onsubmit="submitAction(event, 'action4')">
             <button type="submit">Action 4</button>
         </form>
+        <form id="take_picture" onsubmit="takePicture(event)">
+            <button type="submit">Take Picture</button>
+        </form>
+        <img id="picture" src="" alt="Picture will appear here">
 
         <script>
             function submitAction(event, action) {
@@ -29,6 +33,17 @@
                 fetch('/' + action, { method: 'POST' })
                     .then(response => response.text())
                     .then(text => document.getElementById('response').innerText = text)
+                    .catch(error => console.error('Error:', error));
+            }
+
+            function takePicture(event) {
+                event.preventDefault();
+                fetch('/take_picture', { method: 'POST' })
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        document.getElementById('picture').src = url;
+                    })
                     .catch(error => console.error('Error:', error));
             }
 
