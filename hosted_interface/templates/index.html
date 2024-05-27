@@ -2,79 +2,137 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Joystick Control</title>
+        <title>Control Interface</title>
+        <style>
+            body {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                font-family: Arial, sans-serif;
+            }
+            .controls {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 30%;
+            }
+            .wasd {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .wasd-row {
+                display: flex;
+                justify-content: center;
+                margin: 5px 0;
+            }
+            .wasd-button {
+                width: 100px;
+                height: 100px;
+                font-size: 2rem;
+                margin: 5px;
+            }
+            .joystick-container {
+                width: 60%;
+                display: flex;
+                justify-content: center;
+            }
+            .joystick {
+                width: 300px;
+                height: 300px;
+                border: 1px solid black;
+            }
+            .actions {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin-top: 20px;
+            }
+            .actions button {
+                width: 150px;
+                height: 50px;
+                font-size: 1rem;
+                margin: 10px;
+            }
+            #video {
+                width: 100%;
+                height: auto;
+            }
+        </style>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.7.3/nipplejs.min.js"></script>
     </head>
     <body>
-        <h1>Control Interface</h1>
-        <div id="response"></div>
-        <div id="joystick-container" style="width: 200px; height: 200px; border: 1px solid black;"></div>
-
-        <form id="action1" onsubmit="submitAction(event, 'action1')">
-            <button type="submit">Action 1</button>
-        </form>
-        <form id="action2" onsubmit="submitAction(event, 'action2')">
-            <button type="submit">Action 2</button>
-        </form>
-        <form id="action3" onsubmit="submitAction(event, 'action3')">
-            <button type="submit">Action 3</button>
-        </form>
-        <form id="action4" onsubmit="submitAction(event, 'action4')">
-            <button type="submit">Action 4</button>
-        </form>
-        <form id="take_picture" onsubmit="takePicture(event)">
-            <button type="submit">Take Picture</button>
-        </form>
-        <form id="start_stream" onsubmit="startStream(event)">
-            <button type="submit">Start Stream</button>
-        </form>
-        <form id="stop_stream" onsubmit="stopStream(event)">
-            <button type="submit">Stop Stream</button>
-        </form>
-        <img id="picture" src="" alt="Picture will appear here">
+        <div class="controls">
+            <div class="wasd">
+                <div class="wasd-row">
+                    <button class="wasd-button" id="w-button">W</button>
+                </div>
+                <div class="wasd-row">
+                    <button class="wasd-button" id="a-button">A</button>
+                    <button class="wasd-button" id="s-button">S</button>
+                    <button class="wasd-button" id="d-button">D</button>
+                </div>
+            </div>
+            <div class="actions">
+                <button id="take-picture">Take Picture</button>
+                <button id="start-stream">Start Stream</button>
+                <button id="stop-stream">Stop Stream</button>
+            </div>
+        </div>
+        <div class="joystick-container">
+            <div id="joystick" class="joystick"></div>
+        </div>
         <div>
             <img id="video" src="/video_feed" alt="Video stream will appear here">
         </div>
 
         <script>
-            function submitAction(event, action) {
-                event.preventDefault(); // Prevent form from submitting normally
-                fetch('/' + action, { method: 'POST' })
-                    .then(response => response.text())
-                    .then(text => document.getElementById('response').innerText = text)
-                    .catch(error => console.error('Error:', error));
+            function sendKeyCommand(key) {
+                fetch('/joystick', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ key: key })
+                }).catch(error => console.error('Error:', error));
             }
 
-            function takePicture(event) {
-                event.preventDefault();
+            document.getElementById('w-button').onmousedown = () => sendKeyCommand('w');
+            document.getElementById('a-button').onmousedown = () => sendKeyCommand('a');
+            document.getElementById('s-button').onmousedown = () => sendKeyCommand('s');
+            document.getElementById('d-button').onmousedown = () => sendKeyCommand('d');
+
+            document.getElementById('take-picture').onclick = () => {
                 fetch('/take_picture', { method: 'POST' })
                     .then(response => response.blob())
                     .then(blob => {
                         const url = URL.createObjectURL(blob);
-                        document.getElementById('picture').src = url;
+                        const img = document.createElement('img');
+                        img.src = url;
+                        document.body.appendChild(img);
                     })
                     .catch(error => console.error('Error:', error));
-            }
+            };
 
-            function startStream(event) {
-                event.preventDefault();
+            document.getElementById('start-stream').onclick = () => {
                 fetch('/start_stream', { method: 'POST' })
                     .then(response => response.json())
                     .then(data => console.log(data))
                     .catch(error => console.error('Error:', error));
-            }
+            };
 
-            function stopStream(event) {
-                event.preventDefault();
+            document.getElementById('stop-stream').onclick = () => {
                 fetch('/stop_stream', { method: 'POST' })
                     .then(response => response.json())
                     .then(data => console.log(data))
                     .catch(error => console.error('Error:', error));
-            }
+            };
 
             // Joystick setup
             var joystick = nipplejs.create({
-                zone: document.getElementById('joystick-container'),
+                zone: document.getElementById('joystick'),
                 mode: 'static',
                 position: { left: '50%', top: '50%' },
                 color: 'red'
@@ -98,7 +156,6 @@
                     .catch(error => console.error('Error:', error));
                 }
             });
-
         </script>
     </body>
 </html>
