@@ -40,10 +40,12 @@ def joystick():
 @app.route('/take_picture', methods=['POST'])
 def take_picture():
     file_path = '/tmp/picture.jpg'
-    picam2.start_preview()
+    config = picam2.create_still_configuration()
+    picam2.configure(config)
+    picam2.start()
     time.sleep(2)  # Give some time for the camera to adjust
     picam2.capture_file(file_path)
-    picam2.stop_preview()
+    picam2.stop()
     return send_file(file_path, mimetype='image/jpeg')
 
 if __name__ == '__main__':
