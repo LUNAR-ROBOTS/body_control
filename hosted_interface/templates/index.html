@@ -25,7 +25,16 @@
         <form id="take_picture" onsubmit="takePicture(event)">
             <button type="submit">Take Picture</button>
         </form>
+        <form id="start_stream" onsubmit="startStream(event)">
+            <button type="submit">Start Stream</button>
+        </form>
+        <form id="stop_stream" onsubmit="stopStream(event)">
+            <button type="submit">Stop Stream</button>
+        </form>
         <img id="picture" src="" alt="Picture will appear here">
+        <div>
+            <img id="video" src="{{ url_for('video_feed') }}" alt="Video stream will appear here">
+        </div>
 
         <script>
             function submitAction(event, action) {
@@ -44,6 +53,22 @@
                         const url = URL.createObjectURL(blob);
                         document.getElementById('picture').src = url;
                     })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            function startStream(event) {
+                event.preventDefault();
+                fetch('/start_stream', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => console.log(data))
+                    .catch(error => console.error('Error:', error));
+            }
+
+            function stopStream(event) {
+                event.preventDefault();
+                fetch('/stop_stream', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => console.log(data))
                     .catch(error => console.error('Error:', error));
             }
 

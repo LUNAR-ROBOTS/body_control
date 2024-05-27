@@ -1,9 +1,12 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, Response
 from picamera2 import Picamera2
 import time
+import cv2
+import threading
 
 app = Flask(__name__)
 picam2 = Picamera2()
+streaming = False
 
 @app.route('/')
 def index():
@@ -47,6 +50,42 @@ def take_picture():
     picam2.capture_file(file_path)
     picam2.stop()
     return send_file(file_path, mimetype='image/jpeg')
+
+@app.route('/start_stream', methods=['POST'])
+def start_stream():
+    global streaming
+    if not streaming:
+        streaming = True
+        threading.Thread(target=stream_video).start()
+    return jsonify({"status": "streaming started"})
+
+@app.route('/stop_stream', methods=['POST'])
+def stop_stream():
+    global streaming
+    streaming = False
+    return jsonify({"status": "streaming stopped"})
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_video_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+def stream_video():
+    global streaming
+    config = picam2.create_video_configuration()
+    picam2.configure(config)
+    picam2.start()
+    while streaming:
+        time.sleep(1)
+    picam2.stop()
+
+def generate_video_stream():
+    global streaming
+    while streaming:
+        frame = picam2.capture_array()
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5050)
