@@ -3,10 +3,19 @@ from picamera2 import Picamera2
 import time
 import cv2
 import threading
+import gpiozero
 
 app = Flask(__name__)
 picam2 = Picamera2()
 streaming = False
+
+def flicker_led():
+    led = gpiozero.LED(17)
+    for _ in range(5):
+        led.on()
+        time.sleep(0.2)
+        led.off()
+        time.sleep(0.2)
 
 @app.route('/')
 def index():
@@ -30,6 +39,7 @@ def action3():
 @app.route('/action4', methods=['POST'])
 def action4():
     print("Action 4 triggered!")
+    threading.Thread(target=flicker_led).start()
     return "Action 4 triggered!"
 
 @app.route('/joystick', methods=['POST'])
