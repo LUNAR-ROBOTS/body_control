@@ -99,9 +99,16 @@
                 }).catch(error => console.error('Error:', error));
             }
 
+            function triggerAction4() {
+                fetch('/action4', { method: 'POST' })
+                    .then(response => response.text())
+                    .then(text => console.log(text))
+                    .catch(error => console.error('Error:', error));
+            }
+
             document.getElementById('w-button').onmousedown = () => sendKeyCommand('w');
             document.getElementById('a-button').onmousedown = () => sendKeyCommand('a');
-            document.getElementById('s-button').onmousedown = () => sendKeyCommand('s');
+            document.getElementById('s-button').onmousedown = () => triggerAction4();
             document.getElementById('d-button').onmousedown = () => sendKeyCommand('d');
 
             document.getElementById('take-picture').onclick = () => {
