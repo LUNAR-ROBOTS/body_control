@@ -7,7 +7,7 @@ import gpiozero
 
 app = Flask(__name__)
 picam2 = Picamera2()
-streaming = True
+streaming = False
 
 def flicker_led():
     led = gpiozero.LED(17)
