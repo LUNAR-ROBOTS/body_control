@@ -81,7 +81,7 @@ def video_feed():
 
 def stream_video():
     global streaming
-    config = picam2.create_video_configuration(main={"size": (640, 480), "format": "XRGB8888"}, buffer_count=4, framerate=15)
+    config = picam2.create_video_configuration(main={"size": (640, 480), "format": "XRGB8888"}, buffer_count=4)
     picam2.configure(config)
     picam2.start()
     while streaming:
@@ -98,5 +98,4 @@ def generate_video_stream():
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5050)
     app.run(host='0.0.0.0', port=5050)
